@@ -13,6 +13,10 @@ use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ChatMessageController;
 use App\Http\Controllers\Api\ChatRoomController;
+use App\Http\Controllers\Api\SocialAuthController;
+use App\Http\Controllers\Api\FcmController;
+use App\Services\FcmService;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
     Route::delete('/profile', [ProfileController::class, 'destroy']);
+    Route::post('/fcm-token', [FcmController::class, 'updateToken']);
 
     Route::get('/chat/rooms', [ChatRoomController::class, 'index']);
     Route::post('/chat/rooms', [ChatRoomController::class, 'store']);
@@ -64,7 +69,22 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/auth/google', [SocialAuthController::class, 'googleLogin']);
 Route::get('/regions/provinces', [RegionController::class, 'getProvinces']);
 Route::get('/regions/cities', [RegionController::class, 'getCities']);
 Route::get('/regions/districts/{city_kode}', [RegionController::class, 'getDistricts']);
 Route::get('/regions/villages/{district_kode}', [RegionController::class, 'getVillages']);
+Route::get('/health', fn () => response()->json(['status' => 'ok']));
+Route::get('/send-test', function (FcmService $fcmService) {
+    $userId = optional(User::first())->id ?? 1;
+
+    $result = $fcmService->sendNotification(
+        $userId,
+        'Halo Tokita!',
+        'Ini notifikasi percobaan berhasil masuk!'
+    );
+
+    return response()->json([
+        'message' => $result,
+    ]);
+});

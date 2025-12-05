@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Services\RegionResolver;
+use App\Events\OrderCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -103,6 +104,8 @@ class OrderController extends Controller
 
                 return $order->load('items.product', 'address');
             });
+
+            event(new OrderCreated($order));
 
             return response()->json($this->appendShippingAddress($order), 201);
         } catch (ValidationException $e) {
