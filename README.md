@@ -165,3 +165,5 @@ Contoh respons `GET /api/chat/rooms/{room_id}/messages`:
 Catatan pengembangan:
 - Set environment `DEV_AVATAR_PLACEHOLDER` jika ingin fallback avatar (dev-only) ketika `avatar_url` kosong, sehingga UI tidak memaksa file dari R2.
 - Rate limit bawaan group API tetap aktif; naikkan/override jika perlu menahan spam create-room.
+
+Tes Auto Deploy Tokita - Jam 10:30
