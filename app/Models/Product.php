@@ -24,10 +24,25 @@ class Product extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        $base = rtrim(env('R2_CDN_URL'), '/');
-        $path = ltrim($this->image_path ?? '', '/');
+        $path = $this->image_path ? ltrim($this->image_path, '/\\') : null;
 
-        return $path ? "{$base}/{$path}" : null;
+        if (! $path) {
+            return null;
+        }
+
+        $disk = config('filesystems.default') ?? env('FILESYSTEM_DISK');
+
+        if ($disk === 'r2') {
+            $base = rtrim((string) env('R2_CDN_URL'), '/');
+
+            return $base ? "{$base}/{$path}" : null;
+        }
+
+        if ($disk === 'public') {
+            return asset("storage/{$path}");
+        }
+
+        return null;
     }
 
     public function seller(): BelongsTo
