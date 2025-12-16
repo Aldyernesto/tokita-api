@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ChatMessageController;
 use App\Http\Controllers\Api\ChatRoomController;
 use App\Http\Controllers\Api\SocialAuthController;
+use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\ShopController;
 use App\Http\Controllers\Api\FcmController;
 use App\Services\FcmService;
 use App\Models\User;
@@ -66,10 +68,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/chat/rooms', [ChatRoomController::class, 'store']);
     Route::get('/chat/rooms/{roomId}/messages', [ChatRoomController::class, 'messages']);
     Route::post('/chat/messages', [ChatMessageController::class, 'store']);
+    Route::post('/chat/start', [ChatController::class, 'start']);
+
+    Route::post('/shops/register', [ShopController::class, 'register']);
 });
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/shops/{id}', [ShopController::class, 'show']);
 Route::post('/auth/google', [SocialAuthController::class, 'googleLogin']);
 Route::get('/regions/provinces', [RegionController::class, 'getProvinces']);
 Route::get('/regions/cities', [RegionController::class, 'getCities']);

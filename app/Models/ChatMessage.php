@@ -17,6 +17,8 @@ class ChatMessage extends Model
         'type',
         'content',
         'payload',
+        'attachment_type',
+        'attachment_id',
     ];
 
     protected $casts = [
@@ -36,5 +38,10 @@ class ChatMessage extends Model
     public function reads(): HasMany
     {
         return $this->hasMany(ChatMessageRead::class, 'message_id');
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'attachment_id');
     }
 }
