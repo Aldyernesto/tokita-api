@@ -7,7 +7,6 @@ use App\Models\ChatMessage;
 use App\Models\ChatRoom;
 use App\Services\ChatService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -26,7 +25,7 @@ class ChatMessageController extends Controller
             'type' => ['nullable', 'in:text,product_reference'],
         ]);
 
-        $userId = Auth::id();
+        $userId = (int) auth()->id();
         $room = ChatRoom::with(['product'])->findOrFail($validated['room_id']);
 
         if (! $room->isParticipant($userId)) {
