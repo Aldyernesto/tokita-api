@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\MessageResource;
 use App\Models\ChatMessage;
 use App\Models\ChatRoom;
 use App\Models\Product;
@@ -170,9 +171,6 @@ class ChatRoomController extends Controller
             ->orderBy('created_at')
             ->paginate($perPage);
 
-        $formattedMessages = collect($messages->items())
-            ->map(fn (ChatMessage $message) => $this->chatService->formatMessage($message, $userId));
-
         return response()->json([
             'message' => 'Detail chat.',
             'data' => [
@@ -183,7 +181,7 @@ class ChatRoomController extends Controller
                     'lastMessage.reads',
                     'lastMessage.sender',
                 ]), $userId),
-                'messages' => $formattedMessages,
+                'messages' => MessageResource::collection($messages),
                 'meta' => [
                     'current_page' => $messages->currentPage(),
                     'last_page' => $messages->lastPage(),
