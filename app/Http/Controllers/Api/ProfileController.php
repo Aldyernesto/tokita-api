@@ -120,6 +120,9 @@ class ProfileController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'avatar_url' => $user->avatar_url,
+            'reputation_points' => $user->reputation_points,
+            'badge_level' => $user->badge_level,
+            'badge_url' => $user->badge_url,
         ];
     }
 

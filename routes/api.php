@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ChatRoomController;
 use App\Http\Controllers\Api\SocialAuthController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\ShopController;
+use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\FcmController;
 use App\Services\FcmService;
 use App\Models\User;
@@ -71,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/chat/start', [ChatController::class, 'start']);
 
     Route::post('/shops/register', [ShopController::class, 'register']);
+    Route::put('/transactions/{orderId}/status', [TransactionController::class, 'updateStatus']);
 });
 
 Route::post('/register', [AuthController::class, 'register']);
