@@ -96,13 +96,14 @@ class FavoriteController extends Controller
     private function formatFavorite(Favorite $favorite): array
     {
         $product = $favorite->product;
+        $image = $product?->image_url ?? $product?->image;
 
         return [
             'id' => $favorite->id,
             'product_id' => $favorite->product_id,
             'name' => $product?->name,
             'price' => $product?->price,
-            'image' => $product?->image,
+            'image' => $image,
         ];
     }
 }
