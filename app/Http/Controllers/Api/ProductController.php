@@ -52,6 +52,13 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        // Normalize numeric inputs to integers before validation
+        $request->merge([
+            'price' => (int) preg_replace('/[^0-9]/', '', (string) $request->input('price')),
+            'stock' => (int) preg_replace('/[^0-9]/', '', (string) $request->input('stock')),
+            'category_id' => (int) $request->input('category_id'),
+        ]);
+
         $validated = $request->validate([
             'category_id' => ['required', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:255'],
