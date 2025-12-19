@@ -63,8 +63,9 @@ class ProductController extends Controller
             'category_id' => ['required', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'price' => ['required', 'integer', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'stock' => ['required', 'numeric', 'min:0'],
+            'weight' => ['nullable', 'numeric', 'min:0'],
             'image_url' => ['nullable', 'string', 'max:2048'],
             'image' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ]);
