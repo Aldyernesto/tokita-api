@@ -24,6 +24,21 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
+    public function myProducts(Request $request)
+    {
+        $user = $request->user()->load('shop');
+
+        if (! $user->shop) {
+            return response()->json([
+                'message' => 'Anda perlu membuka toko terlebih dahulu.',
+            ], 422);
+        }
+
+        $products = Product::where('seller_id', $user->shop->id)->get();
+
+        return response()->json($products);
+    }
+
     /**
      * Display the specified resource.
      */

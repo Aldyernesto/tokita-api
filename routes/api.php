@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductSearchController;
 use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ChatMessageController;
 use App\Http\Controllers\Api\ChatRoomController;
@@ -45,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/products', [ProductController::class, 'store']);
     Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/shop/my-products', [ProductController::class, 'myProducts']);
     Route::get('/products/search', ProductSearchController::class);
     Route::get('/products/{id}', [ProductController::class, 'show']);
 
@@ -78,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
 Route::get('/shops/{id}', [ShopController::class, 'show']);
 Route::post('/auth/google', [SocialAuthController::class, 'googleLogin']);
 Route::get('/regions/provinces', [RegionController::class, 'getProvinces']);
