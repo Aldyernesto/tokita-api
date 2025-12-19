@@ -45,10 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/categories/{id}/products', [CategoryController::class, 'show']);
 
     Route::post('/products', [ProductController::class, 'store']);
-    Route::get('/products', [ProductController::class, 'index']);
     Route::get('/shop/my-products', [ProductController::class, 'myProducts']);
-    Route::get('/products/search', ProductSearchController::class);
-    Route::get('/products/{id}', [ProductController::class, 'show']);
 
     Route::post('/checkout', [OrderController::class, 'checkout']);
     Route::get('/orders', [OrderController::class, 'index']);
@@ -83,6 +80,9 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
 Route::get('/shops/{id}', [ShopController::class, 'show']);
 Route::post('/auth/google', [SocialAuthController::class, 'googleLogin']);
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/search', ProductSearchController::class);
+Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::get('/regions/provinces', [RegionController::class, 'getProvinces']);
 Route::get('/regions/cities', [RegionController::class, 'getCities']);
 Route::get('/regions/districts/{city_kode}', [RegionController::class, 'getDistricts']);

@@ -29,12 +29,10 @@ class ProductController extends Controller
         $user = $request->user()->load('shop');
 
         if (! $user->shop) {
-            return response()->json([
-                'message' => 'Anda perlu membuka toko terlebih dahulu.',
-            ], 422);
+            abort(403, 'Anda perlu membuka toko terlebih dahulu.');
         }
 
-        $products = Product::where('seller_id', $user->shop->id)->get();
+        $products = Product::where('shop_id', $user->shop->id)->get();
 
         return response()->json($products);
     }
@@ -66,15 +64,13 @@ class ProductController extends Controller
         $user = $request->user()->load('shop');
 
         if (! $user->shop) {
-            return response()->json([
-                'message' => 'Anda perlu membuka toko terlebih dahulu.',
-            ], 422);
+            abort(403, 'Anda perlu membuka toko terlebih dahulu.');
         }
 
         $product = new Product();
         $product->category_id = $validated['category_id'];
-        $product->seller_id = $user->id;
-        $product->shop_id = $user->shop->id;
+        $product->seller_id = auth()->id();
+        $product->shop_id = auth()->user()->shop->id;
         $product->name = $validated['name'];
         $product->description = $validated['description'] ?? null;
         $product->price = $validated['price'];
