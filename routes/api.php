@@ -35,7 +35,9 @@ use App\Models\User;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
-        return $request->user()->load('shop');
+        $user = $request->user()->load('shop');
+
+        return response()->json($user);
     });
 
     Route::post('/logout', [AuthController::class, 'logout']);
