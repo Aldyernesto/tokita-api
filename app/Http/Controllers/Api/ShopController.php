@@ -16,6 +16,7 @@ class ShopController extends Controller
             'slug' => ['required', 'string', 'max:255', 'unique:shops,slug'],
             'city' => ['nullable', 'string', 'max:255'],
             'image_url' => ['nullable', 'string', 'max:2048'],
+            'image' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
             'description' => ['nullable', 'string'],
         ]);
 
@@ -31,6 +32,11 @@ class ShopController extends Controller
             throw ValidationException::withMessages([
                 'shop' => ['Anda sudah memiliki toko.'],
             ]);
+        }
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('uploads', 'public');
+            $validated['image_url'] = url('storage/'.$path);
         }
 
         $shop = Shop::create([

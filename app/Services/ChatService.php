@@ -90,12 +90,14 @@ class ChatService
 
     public function countUnread(int $roomId, int $userId): int
     {
-        return ChatMessageRead::where('user_id', $userId)
-            ->whereNull('read_at')
+        $unread = ChatMessageRead::where('user_id', $userId)
             ->whereHas('message', function ($query) use ($roomId) {
                 $query->where('room_id', $roomId);
             })
-            ->count();
+            ->selectRaw('SUM(CASE WHEN read_at IS NULL THEN 1 ELSE 0 END) as unread_total')
+            ->value('unread_total');
+
+        return (int) ($unread ?? 0);
     }
 
     public function syncReadsForParticipants(ChatMessage $message, int $senderId, int $recipientId): void

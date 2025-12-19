@@ -59,12 +59,20 @@ class ProductController extends Controller
             'price' => ['required', 'integer', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
             'image_url' => ['nullable', 'string', 'max:2048'],
+            'image' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
         ]);
 
         $user = $request->user()->load('shop');
 
         if (! $user->shop) {
             abort(403, 'Anda perlu membuka toko terlebih dahulu.');
+        }
+
+        $imagePath = $validated['image_url'] ?? null;
+
+        if ($request->hasFile('image')) {
+            $storedPath = $request->file('image')->store('uploads', 'public');
+            $imagePath = $storedPath;
         }
 
         $product = new Product();
@@ -75,7 +83,7 @@ class ProductController extends Controller
         $product->description = $validated['description'] ?? null;
         $product->price = $validated['price'];
         $product->stock = $validated['stock'];
-        $product->image_path = $validated['image_url'] ?? null;
+        $product->image_path = $imagePath;
         $product->save();
 
         return response()->json([
