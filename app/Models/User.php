@@ -52,11 +52,21 @@ class User extends Authenticatable
 
     protected $appends = [
         'badge_url',
+        'has_shop',
     ];
 
     public function shop(): HasOne
     {
         return $this->hasOne(Shop::class);
+    }
+
+    public function getHasShopAttribute(): bool
+    {
+        if ($this->relationLoaded('shop')) {
+            return (bool) $this->shop;
+        }
+
+        return $this->shop()->exists();
     }
 
     public function getBadgeUrlAttribute(): string

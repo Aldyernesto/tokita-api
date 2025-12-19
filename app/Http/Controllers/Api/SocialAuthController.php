@@ -37,11 +37,15 @@ class SocialAuthController extends Controller
             $user->google_id = $validated['google_id'];
         }
 
-        if (array_key_exists('avatar', $validated) && $validated['avatar']) {
+        $avatarProvided = array_key_exists('avatar', $validated) && $validated['avatar'];
+        $hasCustomAvatar = ! empty($user->avatar_url);
+
+        if ($avatarProvided && ! $hasCustomAvatar) {
             $user->avatar_url = $validated['avatar'];
         }
 
         $user->save();
+        $user->load('shop');
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

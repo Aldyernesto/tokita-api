@@ -44,45 +44,44 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-{
-    // 1. Validasi Input
-    $validator = Validator::make($request->all(), [
-        'email' => 'required|string|email',
-        'password' => 'required|string',
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+        ]);
 
-    // Jika validasi gagal
-    if ($validator->fails()) {
-        return response()->json($validator->errors(), 422);
-    }
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
 
-    // 2. Coba Lakukan Login
-    $credentials = $request->only('email', 'password');
+        $credentials = $request->only('email', 'password');
+        $user = User::where('email', $credentials['email'])->first();
 
-    if (!Auth::attempt($credentials)) {
-        // Jika email/password salah
+        if ($user && $user->deleted_at) {
+            return response()->json([
+                'message' => 'Account has been deleted/deactivated',
+                'status' => 401,
+            ], 401);
+        }
+
+        if (! $user || ! Auth::attempt($credentials)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Email atau password salah.',
+            ], 401);
+        }
+
+        $user = Auth::user()->load('shop');
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
-            'status' => 'error',
-            'message' => 'Email atau password salah.'
-        ], 401); // 401 Unauthorized
+            'status' => 'success',
+            'message' => 'Login berhasil',
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user,
+        ]);
     }
-
-    // 3. Jika Berhasil Login
-    $user = Auth::user(); // Ambil data user yang berhasil login
-
-    // Buat Token (tiket masuk) untuk user ini
-    // Kita akan pakai Laravel Sanctum yang simpel
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    // 4. Kirim Respon Sukses beserta Token
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Login berhasil',
-        'access_token' => $token,
-        'token_type' => 'Bearer',
-        'user' => $user
-    ]);
-}
 
     public function logout(Request $request)
     {
