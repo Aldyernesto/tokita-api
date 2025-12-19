@@ -27,12 +27,6 @@ class ShopController extends Controller
 
         $user = $request->user();
 
-        if (! $user->email_verified_at) {
-            throw ValidationException::withMessages([
-                'email' => ['Verifikasi email dulu bos!'],
-            ]);
-        }
-
         if ($user->shop) {
             throw ValidationException::withMessages([
                 'shop' => ['Anda sudah memiliki toko.'],
