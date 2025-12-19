@@ -9,7 +9,7 @@ use Illuminate\Validation\ValidationException;
 
 class ShopController extends Controller
 {
-    public function register(Request $request)
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],

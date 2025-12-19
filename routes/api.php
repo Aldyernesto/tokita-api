@@ -71,7 +71,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/chat/messages', [ChatMessageController::class, 'store']);
     Route::post('/chat/start', [ChatController::class, 'start']);
 
-    Route::post('/shops/register', [ShopController::class, 'register']);
+    Route::post('/shops', [ShopController::class, 'store']);
+    Route::post('/shops/register', [ShopController::class, 'store']);
     Route::put('/transactions/{orderId}/status', [TransactionController::class, 'updateStatus']);
 });
 
