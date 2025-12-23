@@ -5,14 +5,27 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Shop;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 
 class ShopController extends Controller
 {
     public function store(Request $request)
     {
+        $user = $request->user()->load('shop');
+
+        $this->logShopContext($request, $user->shop?->id, [
+            'action' => 'shops.store',
+        ]);
+
+        if ($user->shop) {
+            return response()->json([
+                'message' => 'Anda sudah memiliki toko',
+                'data' => $user->shop,
+            ], 409);
+        }
+
         $request->merge([
             'slug' => Str::slug(($request->name ?? 'shop').'-'.time()),
         ]);
@@ -31,9 +44,6 @@ class ShopController extends Controller
             'description' => ['nullable', 'string'],
         ]);
 
-        $user = $request->user();
-        $existingShop = $user->shop;
-
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('uploads', 'public');
             $validated['image_url'] = url('storage/'.$path);
@@ -42,29 +52,20 @@ class ShopController extends Controller
         $shopData = [
             'name' => $validated['name'],
             'slug' => $validated['slug'],
-            'city' => $validated['city'] ?? $existingShop?->city,
-            'image_url' => $validated['image_url'] ?? $existingShop?->image_url,
-            'description' => $validated['description'] ?? $existingShop?->description,
+            'city' => $validated['city'] ?? null,
+            'image_url' => $validated['image_url'] ?? null,
+            'description' => $validated['description'] ?? null,
         ];
 
-        if ($existingShop) {
-            $existingShop->update($shopData);
-            $shop = $existingShop->fresh();
-            $statusCode = 200;
-            $message = 'Toko berhasil diperbarui.';
-        } else {
-            $shop = Shop::create([
-                'user_id' => $user->id,
-                ...$shopData,
-            ]);
-            $statusCode = 201;
-            $message = 'Toko berhasil dibuat.';
-        }
+        $shop = Shop::create([
+            'user_id' => $user->id,
+            ...$shopData,
+        ]);
 
         return response()->json([
-            'message' => $message,
+            'message' => 'Toko berhasil dibuat.',
             'data' => $shop,
-        ], $statusCode);
+        ], 201);
     }
 
     public function show(int $id)
@@ -78,5 +79,59 @@ class ShopController extends Controller
                 'products' => $shop->products,
             ],
         ]);
+    }
+
+    public function products(Request $request, int $shopId)
+    {
+        $user = $request->user()->load('shop');
+
+        if (! $user->shop) {
+            return response()->json([
+                'message' => 'Anda perlu membuka toko terlebih dahulu.',
+            ], 403);
+        }
+
+        $this->logShopContext($request, $user->shop->id, [
+            'action' => 'shops.products',
+            'incoming_route_shop_id' => $shopId,
+        ]);
+
+        if ($user->shop->id !== $shopId) {
+            Log::warning('Shop access blocked: route shop_id does not match user shop.', [
+                'seller_id' => $user->id,
+                'route_shop_id' => $shopId,
+                'user_shop_id' => $user->shop->id,
+            ]);
+
+            return response()->json([
+                'message' => 'Toko tidak sesuai dengan akun Anda.',
+            ], 403);
+        }
+
+        $products = $user->shop->products()->get();
+
+        return response()->json([
+            'message' => 'Daftar produk toko.',
+            'data' => [
+                'shop' => $user->shop,
+                'products' => $products,
+            ],
+        ]);
+    }
+
+    private function logShopContext(Request $request, ?int $resolvedShopId, array $context = []): void
+    {
+        $token = $request->bearerToken();
+        $tokenHash = $token ? substr(hash('sha256', $token), 0, 12) : null;
+
+        Log::info('Shop context', array_merge([
+            'token_hash' => $tokenHash,
+            'seller_id' => $request->user()?->id,
+            'resolved_shop_id' => $resolvedShopId,
+            'incoming_shop_id' => $request->input('shop_id'),
+            'incoming_store_id' => $request->input('store_id'),
+            'incoming_seller_id' => $request->input('seller_id'),
+            'incoming_owner_id' => $request->input('owner_id'),
+        ], $context));
     }
 }

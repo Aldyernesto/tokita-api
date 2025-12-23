@@ -14,7 +14,15 @@ class CategoryController extends Controller
     {
         $categories = Category::all();
 
-        return response()->json($categories);
+        return response()->json([
+            'message' => 'Daftar kategori.',
+            'data' => [
+                'categories' => [
+                    'items' => $categories,
+                    'total' => $categories->count(),
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -25,6 +33,12 @@ class CategoryController extends Controller
         $category = Category::findOrFail($id);
         $products = $category->products()->get();
 
-        return response()->json($products);
+        return response()->json([
+            'message' => 'Produk berdasarkan kategori.',
+            'data' => [
+                'category' => $category,
+                'products' => $products,
+            ],
+        ]);
     }
 }

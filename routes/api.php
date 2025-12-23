@@ -73,8 +73,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/chat/messages', [ChatMessageController::class, 'store']);
     Route::post('/chat/start', [ChatController::class, 'start']);
 
+    Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/shops', [ShopController::class, 'store']);
     Route::post('/shops/register', [ShopController::class, 'store']);
+    Route::get('/shops/{shopId}/products', [ShopController::class, 'products']);
     Route::put('/transactions/{orderId}/status', [TransactionController::class, 'updateStatus']);
 });
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -76,6 +77,45 @@ class ProductController extends Controller
             abort(403, 'Anda perlu membuka toko terlebih dahulu.');
         }
 
+        $expectedShopId = $user->shop->id;
+        $incomingShopRefs = [
+            'shop_id' => $request->input('shop_id'),
+            'store_id' => $request->input('store_id'),
+            'owner_id' => $request->input('owner_id'),
+        ];
+        $incomingSellerId = $request->input('seller_id');
+
+        $this->logShopContext($request, $expectedShopId, [
+            'action' => 'products.store',
+        ]);
+
+        foreach ($incomingShopRefs as $key => $value) {
+            if ($value !== null && $value !== '' && (int) $value !== $expectedShopId) {
+                Log::warning('Product creation blocked due to mismatched shop reference.', [
+                    'seller_id' => $user->id,
+                    'user_shop_id' => $expectedShopId,
+                    'field' => $key,
+                    'value' => $value,
+                ]);
+
+                return response()->json([
+                    'message' => 'Toko tidak sesuai dengan akun Anda.',
+                ], 403);
+            }
+        }
+
+        if ($incomingSellerId !== null && $incomingSellerId !== '' && (int) $incomingSellerId !== $expectedShopId && (int) $incomingSellerId !== $user->id) {
+            Log::warning('Product creation blocked due to mismatched seller reference.', [
+                'seller_id' => $user->id,
+                'user_shop_id' => $expectedShopId,
+                'incoming_seller_id' => $incomingSellerId,
+            ]);
+
+            return response()->json([
+                'message' => 'Toko tidak sesuai dengan akun Anda.',
+            ], 403);
+        }
+
         $imagePath = $validated['image_url'] ?? null;
 
         if ($request->hasFile('image')) {
@@ -85,8 +125,8 @@ class ProductController extends Controller
 
         $product = new Product();
         $product->category_id = $validated['category_id'];
-        $product->seller_id = auth()->id();
-        $product->shop_id = auth()->user()->shop->id;
+        $product->seller_id = $user->id;
+        $product->shop_id = $expectedShopId;
         $product->name = $validated['name'];
         $product->description = $validated['description'] ?? null;
         $product->price = $validated['price'];
@@ -94,9 +134,35 @@ class ProductController extends Controller
         $product->image_path = $imagePath;
         $product->save();
 
+        $this->logShopContext($request, $expectedShopId, [
+            'action' => 'products.store.enforced',
+            'enforced_fields' => [
+                'shop_id' => $expectedShopId,
+                'store_id' => $expectedShopId,
+                'owner_id' => $expectedShopId,
+                'seller_id' => $user->id,
+            ],
+        ]);
+
         return response()->json([
             'message' => 'Produk berhasil dibuat.',
             'data' => $product,
         ], 201);
+    }
+
+    private function logShopContext(Request $request, ?int $resolvedShopId, array $context = []): void
+    {
+        $token = $request->bearerToken();
+        $tokenHash = $token ? substr(hash('sha256', $token), 0, 12) : null;
+
+        Log::info('Shop context', array_merge([
+            'token_hash' => $tokenHash,
+            'seller_id' => $request->user()?->id,
+            'resolved_shop_id' => $resolvedShopId,
+            'incoming_shop_id' => $request->input('shop_id'),
+            'incoming_store_id' => $request->input('store_id'),
+            'incoming_seller_id' => $request->input('seller_id'),
+            'incoming_owner_id' => $request->input('owner_id'),
+        ], $context));
     }
 }

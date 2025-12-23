@@ -12,6 +12,16 @@ use Illuminate\Validation\Validator as ValidationValidator;
 
 class ProfileController extends Controller
 {
+    public function show(Request $request)
+    {
+        $user = $request->user()->load('shop');
+
+        return response()->json([
+            'message' => 'Profil pengguna.',
+            'data' => $this->formatProfile($user),
+        ]);
+    }
+
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -110,6 +120,25 @@ class ProfileController extends Controller
             'message' => 'Akun berhasil dihapus.',
             'data' => null,
         ]);
+    }
+
+    private function formatProfile(User $user): array
+    {
+        $shop = $user->shop;
+
+        return [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'has_shop' => (bool) $shop,
+            'shop' => $shop ? [
+                'id' => $shop->id,
+                'name' => $shop->name,
+                'city' => $shop->city,
+                'badge_level' => $shop->badge_level,
+                'badge_url' => $shop->badge_url,
+            ] : null,
+        ];
     }
 
     private function formatUser(User $user): array
